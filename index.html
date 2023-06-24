@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Real-time Chat App</title>
+</head>
+<body>
+  <div id="chat">
+    <div id="room-form">
+      <input id="room-input" placeholder="Room ID" /><button id="join-button">Join Room</button>
+    </div>
+    <div id="message-container" style="display: none;">
+      <form id="message-form">
+        <input id="message-input" autocomplete="off" /><button>Send</button>
+      </form>
+    </div>
+    <ul id="messages"></ul>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    document.getElementById('join-button').addEventListener('click', () => {
+      const roomID = document.getElementById('room-input').value.trim();
+      if (roomID) {
+        socket.emit('join', roomID);
+        document.getElementById('room-form').style.display = 'none';
+        document.getElementById('message-container').style.display = 'block';
+      }
+    });
+
+    document.getElementById('message-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const input = document.getElementById('message-input');
+      const message = input.value.trim();
+      if (message) {
+        const roomID = document.getElementById('room-input').value.trim();
+        socket.emit('message', { roomID, message });
+        input.value = '';
+      }
+    });
+
+    socket.on('message', (data) => {
+      const messages = document.getElementById('messages');
+      const li = document.createElement('li');
+      li.innerText = data;
+      messages.appendChild(li);
+    });
+  </script>
+</body>
+</html>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #2C3333;
+    color: #CBE4DE;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  #chat {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #2E4F4F;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #room-form {
+    margin-bottom: 10px;
+  }
+  
+  #messages {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse; /* Reverse the order of messages */
+  }
+  
+  .message {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .incoming {
+    background-color: #0E8388;
+    color: #CBE4DE;
+    align-self: flex-start;
+  }
+  
+  .outgoing {
+    background-color: #CBE4DE;
+    color: #2E4F4F;
+    align-self: flex-end;
+  }
+  
+  .message .content {
+    display: inline-block;
+    max-width: 70%;
+  }
+  
+  .message .timestamp {
+    font-size: 12px;
+    color: #CBE4DE;
+    margin-left: 10px;
+  }
+  
+  #message-form {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  #message-input {
+    flex: 1;
+    padding: 10px;
+    background-color: #2E4F4F;
+    color: #CBE4DE;
+    border: none;
+    border-radius: 20px;
+    margin-right: 10px;
+  }
+  
+  #message-form button {
+    background-color: #0E8388;
+    color: #CBE4DE;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  
+  @media (max-width: 600px) {
+    #chat {
+      padding: 10px;
+    }
+  
+    .message .content {
+      max-width: 60%;
+    }
+  }
+  
+</style>
